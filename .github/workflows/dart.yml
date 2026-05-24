@@ -12,14 +12,15 @@ on:
       - master
 
 jobs:
-  flutter-test-build:
+  analyze:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -30,47 +31,116 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
           channel: stable
           cache: true
 
-      - name: Flutter Version
+      - name: Flutter version
         run: flutter --version
 
-      - name: Install Dependencies
+      - name: Install dependencies — shared
+        working-directory: shared
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze
+      - name: Install dependencies — customer_app
+        working-directory: customer_app
+        run: flutter pub get
 
-      - name: Run Tests
+      - name: Install dependencies — delivery_app
+        working-directory: delivery_app
+        run: flutter pub get
+
+      - name: Install dependencies — admin_app
+        working-directory: admin_app
+        run: flutter pub get
+
+      - name: Analyze — customer_app
+        working-directory: customer_app
+        run: flutter analyze --no-pub
+
+      - name: Analyze — delivery_app
+        working-directory: delivery_app
+        run: flutter analyze --no-pub
+
+      - name: Analyze — admin_app
+        working-directory: admin_app
+        run: flutter analyze --no-pub
+
+      - name: Test — customer_app
+        working-directory: customer_app
         run: flutter test || true
 
+  build-customer-apk:
+    needs: analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get --directory=shared
+          flutter pub get --directory=customer_app
+
       - name: Build APK
-        run: flutter build apk --release
+        working-directory: customer_app
+        run: flutter build apk --release --dart-define=FLAVOR=quantix
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: quantix-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: quantix-customer-release-apk
+          path: customer_app/build/app/outputs/flutter-apk/app-release.apk
 
-  android-release:
-    needs: flutter-test-build
+  build-customer-aab:
+    needs: analyze
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          flutter-version: stable
+          submodules: recursive
+          fetch-depth: 0
 
-      - run: flutter pub get
-
-      - run: flutter build appbundle --release
-
-      - uses: actions/upload-artifact@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          name: quantix-aab
-          path: build/app/outputs/bundle/release/app-release.aab
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get --directory=shared
+          flutter pub get --directory=customer_app
+
+      - name: Build App Bundle
+        working-directory: customer_app
+        run: flutter build appbundle --release --dart-define=FLAVOR=quantix
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: quantix-customer-release-aab
+          path: customer_app/build/app/outputs/bundle/release/app-release.aab
