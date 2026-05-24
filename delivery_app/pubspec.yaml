@@ -1,0 +1,28 @@
+name: quantix_delivery
+description: Quantix Delivery App — for delivery riders
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  quantix_shared:
+    path: ../shared
+  flutter_riverpod: ^2.6.1
+  go_router: ^17.2.3
+  hive_flutter: ^1.1.0
+  google_maps_flutter: ^2.10.0
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - branding/freshmart/

@@ -1,0 +1,22 @@
+{
+  "appName": "Fresh Mart",
+  "businessId": "FRM001",
+  "packageName": "com.freshmart.app",
+  "businessType": "grocery",
+  "primaryColor": "#00B14F",
+  "secondaryColor": "#FFFFFF",
+  "accentColor": "#FF6B00",
+  "currency": "PKR",
+  "supportPhone": "+92-3001234567",
+  "mapEnabled": true,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "cart",
+    "orders",
+    "tracking",
+    "loyalty",
+    "delivery",
+    "subscriptions"
+  ]
+}
