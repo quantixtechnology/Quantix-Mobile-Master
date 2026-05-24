@@ -406,7 +406,7 @@ ok "Android source sets clean"
 step "Running flutter pub get in all packages..."
 for pkg_dir in shared customer_app delivery_app admin_app; do
   if [[ -f "$TARGET_DIR/$pkg_dir/pubspec.yaml" ]]; then
-    (cd "$TARGET_DIR/$pkg_dir" && flutter pub get --quiet 2>&1 | tail -1)
+    (cd "$TARGET_DIR/$pkg_dir" && flutter pub get 2>&1 | grep -E "Got dependencies|Failed|Error" | head -1)
     ok "$pkg_dir  →  deps resolved"
   fi
 done

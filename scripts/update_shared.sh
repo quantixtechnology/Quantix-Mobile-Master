@@ -147,7 +147,7 @@ git -C shared log --oneline "${CURRENT_SHA}..${NEW_SHA}" 2>/dev/null || \
 step "Resolving dependencies in all apps..."
 for pkg in shared customer_app delivery_app admin_app; do
   if [[ -f "$REPO_DIR/$pkg/pubspec.yaml" ]]; then
-    (cd "$REPO_DIR/$pkg" && flutter pub get --quiet 2>&1 | tail -1) || \
+    (cd "$REPO_DIR/$pkg" && flutter pub get 2>&1 | grep -E "Got dependencies|Failed|Error" | head -1) || \
       warn "$pkg pub get had warnings (check manually)"
     ok "$pkg  →  deps resolved"
   fi
