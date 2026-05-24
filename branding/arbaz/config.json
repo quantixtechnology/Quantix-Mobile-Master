@@ -1,0 +1,21 @@
+{
+  "appName": "Arbaz Fresh Meat",
+  "businessId": "ARB001",
+  "packageName": "com.arbazfreshmeat.app",
+  "businessType": "meat",
+  "primaryColor": "#1E7A35",
+  "secondaryColor": "#FFFFFF",
+  "accentColor": "#D32F2F",
+  "currency": "INR",
+  "supportPhone": "+91-9876543210",
+  "mapEnabled": true,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "cart",
+    "orders",
+    "tracking",
+    "loyalty",
+    "delivery"
+  ]
+}

@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:label="Arbaz Fresh Meat"
+        android:icon="@mipmap/ic_launcher" />
+</manifest>

@@ -1,0 +1,20 @@
+{
+  "appName": "Restaurant App",
+  "businessId": "RST001",
+  "packageName": "com.restaurant.quantix.app",
+  "businessType": "restaurant",
+  "primaryColor": "#E53935",
+  "secondaryColor": "#FFF8E1",
+  "accentColor": "#FF8F00",
+  "currency": "PKR",
+  "supportPhone": "+92-3001112233",
+  "mapEnabled": true,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "cart",
+    "orders",
+    "tracking",
+    "delivery"
+  ]
+}

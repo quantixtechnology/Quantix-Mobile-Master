@@ -1,0 +1,18 @@
+{
+  "appName": "Salon App",
+  "businessId": "SAL001",
+  "packageName": "com.salon.quantix.app",
+  "businessType": "salon",
+  "primaryColor": "#8E24AA",
+  "secondaryColor": "#F3E5F5",
+  "accentColor": "#FF4081",
+  "currency": "PKR",
+  "supportPhone": "+92-3009876543",
+  "mapEnabled": false,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "appointments",
+    "notifications"
+  ]
+}
