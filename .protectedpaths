@@ -1,0 +1,35 @@
+# .protectedpaths
+#
+# Paths that must NEVER be overwritten by a shared submodule update.
+# These are business-specific and live in the parent repo — they are
+# structurally protected (git submodule update only touches shared/).
+#
+# This file is read by scripts/update_shared.sh for pre-update validation.
+#
+# Format: one glob per line, relative to the business repo root.
+# Lines starting with # are comments.
+
+# Branding assets (colors, images, config)
+*/branding/
+branding/
+
+# Business-specific logic
+*/custom/
+
+# Firebase credentials (never committed — listed here for documentation)
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Environment / secrets
+.env
+.env.*
+*.jks
+*.keystore
+
+# App-layer pubspec files (business controls their own deps)
+customer_app/pubspec.yaml
+delivery_app/pubspec.yaml
+admin_app/pubspec.yaml
+
+# Business README
+README.md
