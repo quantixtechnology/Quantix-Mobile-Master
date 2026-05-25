@@ -7,15 +7,12 @@ import 'router/app_router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  // Firebase.initializeApp() — add google-services.json before enabling
 
   final brandConfig = await BrandLoader.load(appFlavor);
 
   runApp(
     ProviderScope(
-      overrides: [
-        brandConfigProvider.overrideWithValue(brandConfig),
-      ],
+      overrides: [brandConfigProvider.overrideWithValue(brandConfig)],
       child: const QuantixDeliveryApp(),
     ),
   );
@@ -27,12 +24,13 @@ class QuantixDeliveryApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brand = ref.watch(brandConfigProvider);
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: '${brand.appName} Delivery',
       debugShowCheckedModeBanner: false,
       theme: ThemeFactory.light(brand),
       darkTheme: ThemeFactory.dark(brand),
-      routerConfig: deliveryRouter,
+      routerConfig: router,
     );
   }
 }

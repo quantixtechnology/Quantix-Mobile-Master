@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quantix_shared/quantix_shared.dart';
 
-class DeliveryAuthNotifier extends Notifier<AuthState> {
+class AdminAuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() => const AuthState();
 
@@ -12,7 +12,7 @@ class DeliveryAuthNotifier extends Notifier<AuthState> {
     final user = await _service.restoreSession();
     state = state.copyWith(
       isRestoring: false,
-      isAuthenticated: user != null && user.role == UserRole.rider,
+      isAuthenticated: user != null && user.role == UserRole.admin,
       user: user,
     );
   }
@@ -23,7 +23,7 @@ class DeliveryAuthNotifier extends Notifier<AuthState> {
       final user = await _service.loginWithPassword(
         email: email,
         password: password,
-        role: UserRole.rider,
+        role: UserRole.admin,
       );
       state = state.copyWith(
         isLoading: false,
@@ -41,5 +41,5 @@ class DeliveryAuthNotifier extends Notifier<AuthState> {
   }
 }
 
-final deliveryAuthProvider =
-    NotifierProvider<DeliveryAuthNotifier, AuthState>(DeliveryAuthNotifier.new);
+final adminAuthProvider =
+    NotifierProvider<AdminAuthNotifier, AuthState>(AdminAuthNotifier.new);

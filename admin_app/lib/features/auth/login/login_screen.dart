@@ -4,14 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:quantix_shared/quantix_shared.dart';
 import '../auth_provider.dart';
 
-class DeliveryLoginScreen extends ConsumerStatefulWidget {
-  const DeliveryLoginScreen({super.key});
+class AdminLoginScreen extends ConsumerStatefulWidget {
+  const AdminLoginScreen({super.key});
 
   @override
-  ConsumerState<DeliveryLoginScreen> createState() => _DeliveryLoginScreenState();
+  ConsumerState<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _DeliveryLoginScreenState extends ConsumerState<DeliveryLoginScreen> {
+class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -26,7 +26,7 @@ class _DeliveryLoginScreenState extends ConsumerState<DeliveryLoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(deliveryAuthProvider.notifier).login(
+    await ref.read(adminAuthProvider.notifier).login(
           _emailController.text.trim(),
           _passwordController.text,
         );
@@ -34,11 +34,11 @@ class _DeliveryLoginScreenState extends ConsumerState<DeliveryLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(deliveryAuthProvider, (_, next) {
-      if (next.isAuthenticated) context.go('/orders');
+    ref.listen<AuthState>(adminAuthProvider, (_, next) {
+      if (next.isAuthenticated) context.go('/dashboard');
     });
 
-    final auth = ref.watch(deliveryAuthProvider);
+    final auth = ref.watch(adminAuthProvider);
     final brand = ref.watch(brandConfigProvider);
 
     return Scaffold(
@@ -51,11 +51,11 @@ class _DeliveryLoginScreenState extends ConsumerState<DeliveryLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Spacer(),
-                Text('${brand.appName} Rider',
+                Text('${brand.appName} Admin',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
-                Text('Sign in to your rider account',
+                Text('Operations dashboard access',
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center),
                 const SizedBox(height: 40),
@@ -64,7 +64,7 @@ class _DeliveryLoginScreenState extends ConsumerState<DeliveryLoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                    prefixIcon: Icon(Icons.admin_panel_settings_outlined),
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) {
@@ -88,7 +88,7 @@ class _DeliveryLoginScreenState extends ConsumerState<DeliveryLoginScreen> {
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Enter your password';
-                    if (v.length < 6) return 'Password must be at least 6 characters';
+                    if (v.length < 6) return 'Password too short';
                     return null;
                   },
                 ),

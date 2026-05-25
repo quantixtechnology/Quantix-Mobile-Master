@@ -13,9 +13,7 @@ void main() async {
 
   runApp(
     ProviderScope(
-      overrides: [
-        brandConfigProvider.overrideWithValue(brandConfig),
-      ],
+      overrides: [brandConfigProvider.overrideWithValue(brandConfig)],
       child: const QuantixCustomerApp(),
     ),
   );
@@ -27,12 +25,13 @@ class QuantixCustomerApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final brand = ref.watch(brandConfigProvider);
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: brand.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeFactory.light(brand),
       darkTheme: ThemeFactory.dark(brand),
-      routerConfig: appRouter,
+      routerConfig: router,
     );
   }
 }

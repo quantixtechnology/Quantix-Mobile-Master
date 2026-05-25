@@ -1,36 +1,53 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-class AuthState {
-  final bool isAuthenticated;
-  final bool isLoading;
-  final String? error;
-  final String? userId;
-
-  const AuthState({
-    this.isAuthenticated = false,
-    this.isLoading = false,
-    this.error,
-    this.userId,
-  });
-
-  AuthState copyWith({
-    bool? isAuthenticated,
-    bool? isLoading,
-    String? error,
-    String? userId,
-  }) =>
-      AuthState(
-        isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        userId: userId ?? this.userId,
-      );
-}
+import 'package:quantix_shared/quantix_shared.dart';
 
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() => const AuthState();
+
+  AuthService get _service => ref.read(authServiceProvider);
+
+  Future<void> restoreSession() async {
+    state = state.copyWith(isRestoring: true);
+    final user = await _service.restoreSession();
+    state = state.copyWith(
+      isRestoring: false,
+      isAuthenticated: user != null,
+      user: user,
+    );
+  }
+
+  Future<void> requestOtp(String phone) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final sessionToken = await _service.requestOtp(phone);
+      state = state.copyWith(isLoading: false, pendingSessionToken: sessionToken);
+    } on AppException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+    }
+  }
+
+  Future<void> verifyOtp(String code) async {
+    final sessionToken = state.pendingSessionToken;
+    if (sessionToken == null) return;
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final user = await _service.verifyOtp(sessionToken, code);
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: true,
+        user: user,
+        clearPendingSession: true,
+      );
+    } on AppException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+    }
+  }
+
+  Future<void> logout() async {
+    await _service.logout();
+    state = const AuthState(isRestoring: false);
+  }
 }
 
-final authProvider =
-    NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
