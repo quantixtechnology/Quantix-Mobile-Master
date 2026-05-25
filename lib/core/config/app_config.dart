@@ -1,9 +1,9 @@
 class AppConfig {
-  // DEV:  --dart-define=API_BASE_URL=http://10.0.2.2:3000/api/core
-  // PROD: default (https://api.quantixtechnology.in/api/core)
+  // DEV:  --dart-define=API_BASE_URL=http://10.0.2.2:3000
+  // PROD: default (https://api.quantixtechnology.in)
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.quantixtechnology.in/api/core',
+    defaultValue: 'https://api.quantixtechnology.in',
   );
   static const String socketUrl = String.fromEnvironment(
     'SOCKET_URL',
