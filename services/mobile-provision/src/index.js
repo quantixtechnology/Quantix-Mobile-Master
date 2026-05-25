@@ -79,10 +79,15 @@ app.post('/mobile/tenants/:slug/push-to-github', requireAuth, (req, res) => {
   const record = store.get(slug);
   if (!record) return res.status(404).json({ error: 'Tenant not found' });
 
-  if (record.status !== store.BuildStatus.BUILDING) {
+  // Retriable states:
+  //   BUILDING + no repoUrl  — token absent at provision time, nothing pushed yet
+  //   FAILED + branding DONE — previous push attempt failed (wrong scope, network, etc.)
+  const retriable = record.status === store.BuildStatus.BUILDING ||
+    (record.status === store.BuildStatus.FAILED && record.brandingStatus === 'DONE');
+  if (!retriable) {
     return res.status(409).json({
-      error: `Expected status BUILDING, got ${record.status}`,
-      hint: 'This endpoint resumes a tenant that completed create_business.sh but had no GitHub token.',
+      error: `Cannot resume: status=${record.status} brandingStatus=${record.brandingStatus}`,
+      hint: 'Valid when status=BUILDING or status=FAILED with brandingStatus=DONE.',
     });
   }
 
@@ -108,10 +113,11 @@ app.post('/mobile/tenants/:slug/push-to-github', requireAuth, (req, res) => {
     try {
       const repo = await github.createRepo(slug, record.name);
       if (!repo) return; // no token, already guarded above
+      // Persist repoUrl immediately so a subsequent push failure is retriable
+      store.update(slug, { repoUrl: repo.repoUrl });
       await github.pushCode(tenantDir, repo.cloneUrl);
       await github.enableActions(repo.repoName);
       await github.registerWebhook(repo.repoName);
-      store.update(slug, { repoUrl: repo.repoUrl });
       console.log(`[push-to-github] ${slug} → ${repo.repoUrl}`);
     } catch (err) {
       console.error(`[push-to-github] ${slug} FAILED:`, err.message);

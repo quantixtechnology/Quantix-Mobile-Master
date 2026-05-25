@@ -3,10 +3,13 @@
 /**
  * GitHub automation hooks for Quantix tenant provisioning.
  *
- * ACTIVATION: Set GITHUB_TOKEN and GITHUB_ORG in .env, then call
- * createRepo() and pushCode() from provision.js after create_business.sh
- * completes. Set PROVISION_WEBHOOK_URL to auto-register a webhook so
- * CI build results are reported back to this service.
+ * ACTIVATION: Set GITHUB_TOKEN, GITHUB_OWNER, and GITHUB_OWNER_TYPE in .env,
+ * then call createRepo() and pushCode() from provision.js after
+ * create_business.sh completes. Set PROVISION_WEBHOOK_URL to auto-register a
+ * webhook so CI build results are reported back to this service.
+ *
+ * GITHUB_OWNER_TYPE: "personal" (default) → POST /user/repos
+ *                    "org"               → POST /orgs/{owner}/repos
  *
  * All functions are no-ops when GITHUB_TOKEN is absent (safe for local dev).
  */
@@ -15,7 +18,9 @@ const { Octokit } = require('@octokit/rest');
 const { execFileSync } = require('child_process');
 const path = require('path');
 
-const ORG = process.env.GITHUB_ORG || 'quantixtechnology';
+// GITHUB_OWNER replaces the old GITHUB_ORG — works for both personal accounts and orgs.
+const OWNER = process.env.GITHUB_OWNER || process.env.GITHUB_ORG || 'quantixtechnology';
+const OWNER_TYPE = (process.env.GITHUB_OWNER_TYPE || 'personal').toLowerCase(); // personal | org
 const WEBHOOK_URL = process.env.PROVISION_WEBHOOK_URL || '';
 const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || '';
 
@@ -36,16 +41,30 @@ async function createRepo(slug, appName) {
   }
 
   const repoName = `${slug.charAt(0).toUpperCase() + slug.slice(1)}-Mobile`;
-
-  const { data } = await kit.repos.createInOrg({
-    org: ORG,
+  const repoPayload = {
     name: repoName,
     description: `${appName} — Quantix mobile apps (customer, delivery, admin)`,
     private: true,
     auto_init: false,
-  });
+  };
 
-  console.log(`[github] Repo created: ${data.html_url}`);
+  let data;
+  try {
+    if (OWNER_TYPE === 'org') {
+      ({ data } = await kit.repos.createInOrg({ org: OWNER, ...repoPayload }));
+    } else {
+      ({ data } = await kit.repos.createForAuthenticatedUser(repoPayload));
+    }
+    console.log(`[github] Repo created: ${data.html_url}`);
+  } catch (err) {
+    // 422 = repo already exists (retry after a failed push) — fetch it instead
+    if (err.status === 422) {
+      console.warn(`[github] Repo already exists — fetching ${OWNER}/${repoName}`);
+      ({ data } = await kit.repos.get({ owner: OWNER, repo: repoName }));
+    } else {
+      throw err;
+    }
+  }
   return { repoUrl: data.html_url, cloneUrl: data.clone_url, repoName };
 }
 
@@ -67,6 +86,10 @@ async function pushCode(repoDir, cloneUrl) {
     `https://x-access-token:${process.env.GITHUB_TOKEN}@`,
   );
 
+  // Re-add remote (remove stale one from a previous failed attempt if present)
+  try {
+    execFileSync('git', ['remote', 'remove', 'origin'], { cwd: repoDir });
+  } catch (_) { /* no remote yet — fine */ }
   execFileSync('git', ['remote', 'add', 'origin', authedUrl], { cwd: repoDir });
   execFileSync('git', ['push', '-u', 'origin', 'main'], { cwd: repoDir });
   console.log(`[github] Code pushed to origin/main`);
@@ -86,7 +109,7 @@ async function registerWebhook(repoName) {
   }
 
   await kit.repos.createWebhook({
-    owner: ORG,
+    owner: OWNER,
     repo: repoName,
     config: {
       url: `${WEBHOOK_URL}/mobile/webhook/github`,
@@ -97,7 +120,7 @@ async function registerWebhook(repoName) {
     active: true,
   });
 
-  console.log(`[github] Webhook registered on ${ORG}/${repoName}`);
+  console.log(`[github] Webhook registered on ${OWNER}/${repoName}`);
 }
 
 /**
@@ -109,13 +132,13 @@ async function enableActions(repoName) {
   if (!kit) return;
 
   await kit.actions.setGithubActionsPermissionsRepository({
-    owner: ORG,
+    owner: OWNER,
     repo: repoName,
     enabled: true,
     allowed_actions: 'all',
   });
 
-  console.log(`[github] Actions enabled on ${ORG}/${repoName}`);
+  console.log(`[github] Actions enabled on ${OWNER}/${repoName}`);
 }
 
 module.exports = { createRepo, pushCode, registerWebhook, enableActions };
