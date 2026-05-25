@@ -108,6 +108,16 @@ jobs:
             echo "$FIREBASE_OPTIONS" > firebase_options.dart
           fi
 
+      - name: Write google-services.json (customer)
+        env:
+          GOOGLE_SERVICES: ${{ secrets.CUSTOMER_GOOGLE_SERVICES }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" > customer_app/android/app/google-services.json
+          else
+            python3 -c 'import json; print(json.dumps({"project_info":{"project_number":"000000000000","project_id":"quantix-ci","storage_bucket":"quantix-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.quantix.customer"}},"oauth_client":[],"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"},indent=2))' > customer_app/android/app/google-services.json
+          fi
+
       - name: Write keystore
         working-directory: customer_app/android
         env:
@@ -163,6 +173,16 @@ jobs:
         run: |
           if [ -n "$FIREBASE_OPTIONS" ]; then
             echo "$FIREBASE_OPTIONS" > firebase_options.dart
+          fi
+
+      - name: Write google-services.json (customer)
+        env:
+          GOOGLE_SERVICES: ${{ secrets.CUSTOMER_GOOGLE_SERVICES }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" > customer_app/android/app/google-services.json
+          else
+            python3 -c 'import json; print(json.dumps({"project_info":{"project_number":"000000000000","project_id":"quantix-ci","storage_bucket":"quantix-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.quantix.customer"}},"oauth_client":[],"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"},indent=2))' > customer_app/android/app/google-services.json
           fi
 
       - name: Write keystore
@@ -225,6 +245,16 @@ jobs:
             echo "$FIREBASE_OPTIONS" > firebase_options.dart
           fi
 
+      - name: Write google-services.json (delivery)
+        env:
+          GOOGLE_SERVICES: ${{ secrets.DELIVERY_GOOGLE_SERVICES }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" > delivery_app/android/app/google-services.json
+          else
+            python3 -c 'import json; print(json.dumps({"project_info":{"project_number":"000000000000","project_id":"quantix-ci","storage_bucket":"quantix-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.quantix.delivery"}},"oauth_client":[],"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"},indent=2))' > delivery_app/android/app/google-services.json
+          fi
+
       - name: Write keystore
         working-directory: delivery_app/android
         env:
@@ -283,6 +313,16 @@ jobs:
         run: |
           if [ -n "$FIREBASE_OPTIONS" ]; then
             echo "$FIREBASE_OPTIONS" > firebase_options.dart
+          fi
+
+      - name: Write google-services.json (admin)
+        env:
+          GOOGLE_SERVICES: ${{ secrets.ADMIN_GOOGLE_SERVICES }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES" ]; then
+            echo "$GOOGLE_SERVICES" > admin_app/android/app/google-services.json
+          else
+            python3 -c 'import json; print(json.dumps({"project_info":{"project_number":"000000000000","project_id":"quantix-ci","storage_bucket":"quantix-ci.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.quantix.admin"}},"oauth_client":[],"api_key":[{"current_key":"placeholder"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"},indent=2))' > admin_app/android/app/google-services.json
           fi
 
       - name: Write keystore
