@@ -66,6 +66,60 @@ app.get('/mobile/tenants/:slug', requireAuth, (req, res) => {
   res.json(record);
 });
 
+// ── POST /mobile/tenants/:slug/push-to-github ────────────────────────────────
+// Resume GitHub steps for a BUILDING tenant whose local directory already exists
+// (i.e. create_business.sh ran but GITHUB_TOKEN was absent at provision time).
+// Responds immediately; repo creation + push run fire-and-forget in background.
+app.post('/mobile/tenants/:slug/push-to-github', requireAuth, (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const github = require('./github');
+
+  const slug = req.params.slug;
+  const record = store.get(slug);
+  if (!record) return res.status(404).json({ error: 'Tenant not found' });
+
+  if (record.status !== store.BuildStatus.BUILDING) {
+    return res.status(409).json({
+      error: `Expected status BUILDING, got ${record.status}`,
+      hint: 'This endpoint resumes a tenant that completed create_business.sh but had no GitHub token.',
+    });
+  }
+
+  if (!process.env.GITHUB_TOKEN) {
+    return res.status(503).json({ error: 'GITHUB_TOKEN not configured — set it in .env and restart the service' });
+  }
+
+  const MASTER_DIR = process.env.MASTER_REPO_DIR || path.resolve(__dirname, '..', '..', '..');
+  const folderName = slug.charAt(0).toUpperCase() + slug.slice(1) + '-Mobile';
+  const tenantDir = path.join(path.dirname(MASTER_DIR), folderName);
+
+  if (!fs.existsSync(tenantDir)) {
+    return res.status(422).json({
+      error: `Tenant directory not found: ${tenantDir}`,
+      hint: 'Run POST /mobile/provision-tenant to regenerate it first.',
+    });
+  }
+
+  res.json({ ok: true, message: `GitHub push started for ${slug}`, tenantDir });
+
+  // Fire-and-forget — push to GitHub, trigger CI
+  (async () => {
+    try {
+      const repo = await github.createRepo(slug, record.name);
+      if (!repo) return; // no token, already guarded above
+      await github.pushCode(tenantDir, repo.cloneUrl);
+      await github.enableActions(repo.repoName);
+      await github.registerWebhook(repo.repoName);
+      store.update(slug, { repoUrl: repo.repoUrl });
+      console.log(`[push-to-github] ${slug} → ${repo.repoUrl}`);
+    } catch (err) {
+      console.error(`[push-to-github] ${slug} FAILED:`, err.message);
+      store.update(slug, { status: store.BuildStatus.FAILED, error: err.message });
+    }
+  })();
+});
+
 // ── POST /mobile/webhook/github ───────────────────────────────────────────────
 app.post('/mobile/webhook/github', webhook.handleGitHub);
 
