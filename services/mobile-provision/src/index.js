@@ -118,6 +118,8 @@ app.post('/mobile/tenants/:slug/push-to-github', requireAuth, (req, res) => {
       await github.pushCode(tenantDir, repo.cloneUrl);
       await github.enableActions(repo.repoName);
       await github.registerWebhook(repo.repoName);
+      // Reset to BUILDING + clear any stale error — CI will advance to READY/FAILED
+      store.update(slug, { status: store.BuildStatus.BUILDING, error: null });
       console.log(`[push-to-github] ${slug} → ${repo.repoUrl}`);
     } catch (err) {
       console.error(`[push-to-github] ${slug} FAILED:`, err.message);
