@@ -20,10 +20,11 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> requestEmailOtp(String email) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      await _service.requestEmailOtp(email);
+      final devOtp = await _service.requestEmailOtp(email);
       state = state.copyWith(
         isLoading: false,
         pendingEmail: email.trim(),
+        devOtp: devOtp,
       );
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
