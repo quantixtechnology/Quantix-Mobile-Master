@@ -384,6 +384,48 @@ EOF
 ok "build.gradle.kts  →  applicationId=$PKG_CUSTOMER"
 
 # ════════════════════════════════════════════════════════════════════════════
+# STEP 7b — Patch per-app Android package IDs + Kotlin source directories
+# Each sub-app ships with its own android/ project. Replace the template
+# com.quantix.* IDs with the tenant-specific package IDs.
+# ════════════════════════════════════════════════════════════════════════════
+step "Patching per-app Android package IDs (customer / delivery / admin)..."
+
+_patch_android_app() {
+  local app_dir="$1"   # customer_app | delivery_app | admin_app
+  local old_pkg="$2"   # com.quantix.customer etc.
+  local new_pkg="$3"   # tenant package, e.g. com.arbazmart.customer
+  local suffix="$4"    # customer | delivery | admin
+
+  # 1. Patch build.gradle.kts — namespace and applicationId
+  local gradle="$TARGET_DIR/$app_dir/android/app/build.gradle.kts"
+  if [[ -f "$gradle" ]]; then
+    sed -i '' "s|$old_pkg|$new_pkg|g" "$gradle"
+    ok "$app_dir/android/app/build.gradle.kts  →  $new_pkg"
+  fi
+
+  # 2. Move Kotlin source directory and update package declarations
+  local kt_base="$TARGET_DIR/$app_dir/android/app/src/main/kotlin"
+  local old_kt_dir="$kt_base/com/quantix/quantix_$suffix"
+  local new_company="$kt_base/com/$PKG_SAFE"
+  local new_kt_dir="$new_company/${PKG_SAFE}_$suffix"
+
+  if [[ -d "$old_kt_dir" ]]; then
+    mkdir -p "$new_company"
+    mv "$old_kt_dir" "$new_kt_dir"
+    for kt_file in "$new_kt_dir"/*.kt; do
+      [[ -f "$kt_file" ]] || continue
+      sed -i '' "s|$old_pkg|$new_pkg|g" "$kt_file"
+    done
+    rm -rf "$kt_base/com/quantix" 2>/dev/null || true
+    ok "$app_dir/android Kotlin  →  com/$PKG_SAFE/${PKG_SAFE}_$suffix/"
+  fi
+}
+
+_patch_android_app customer_app "com.quantix.customer" "$PKG_CUSTOMER" customer
+_patch_android_app delivery_app "com.quantix.delivery" "$PKG_DELIVERY" delivery
+_patch_android_app admin_app    "com.quantix.admin"    "$PKG_ADMIN"    admin
+
+# ════════════════════════════════════════════════════════════════════════════
 # STEP 8 — Remove stale Android flavor source sets
 # ════════════════════════════════════════════════════════════════════════════
 step "Removing Android flavor source sets..."

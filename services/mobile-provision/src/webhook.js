@@ -119,10 +119,10 @@ function handleCiArtifact(req, res) {
 
   const patch = {
     status: status === 'success' ? store.BuildStatus.READY : store.BuildStatus.FAILED,
+    error: status === 'success' ? null : `CI build ${status}`,
   };
   if (apkUrl) patch.apkUrl = apkUrl;
   if (aabUrl) patch.aabUrl = aabUrl;
-  if (status !== 'success') patch.error = `CI build ${status}`;
 
   store.update(slug, patch);
   console.log(`[webhook] ci-artifact ${slug} → ${patch.status}`);
