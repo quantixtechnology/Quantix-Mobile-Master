@@ -13,17 +13,17 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authProvider.notifier).requestOtp(_phoneController.text.trim());
+    await ref.read(authProvider.notifier).requestEmailOtp(_emailController.text.trim());
   }
 
   @override
@@ -47,37 +47,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const Spacer(),
                 Text(brand.appName,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
-                Text('Enter your phone number to continue',
+                Text('Enter your email address to continue',
                     style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center),
                 const SizedBox(height: 40),
                 TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
                   decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    prefixIcon: Icon(Icons.phone_outlined),
+                    labelText: 'Email Address',
+                    prefixIcon: Icon(Icons.email_outlined),
                     border: OutlineInputBorder(),
-                    hintText: '+92 300 0000000',
+                    hintText: 'you@example.com',
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Enter your phone number';
-                    if (v.trim().length < 10) return 'Enter a valid phone number';
+                    if (v == null || v.trim().isEmpty) return 'Enter your email address';
+                    final emailRe = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                    if (!emailRe.hasMatch(v.trim())) return 'Enter a valid email address';
                     return null;
                   },
                 ),
                 if (auth.error != null) ...[
                   const SizedBox(height: 12),
-                  Text(auth.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  Text(auth.error!,
+                      style: TextStyle(color: Theme.of(context).colorScheme.error)),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: auth.isLoading ? null : _submit,
                   child: auth.isLoading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2))
                       : const Text('Send OTP'),
                 ),
                 const Spacer(flex: 2),

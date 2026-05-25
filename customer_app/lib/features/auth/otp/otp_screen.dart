@@ -33,6 +33,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     });
 
     final auth = ref.watch(authProvider);
+    final email = auth.pendingEmail;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Verify OTP')),
@@ -45,9 +46,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
-                Text('Enter the 6-digit code sent to your phone',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center),
+                Text(
+                  email != null
+                      ? 'Enter the 6-digit code sent to $email'
+                      : 'Enter the 6-digit code sent to your email',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _otpController,

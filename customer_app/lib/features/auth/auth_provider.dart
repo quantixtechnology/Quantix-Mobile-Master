@@ -17,11 +17,15 @@ class AuthNotifier extends Notifier<AuthState> {
     );
   }
 
-  Future<void> requestOtp(String phone) async {
+  Future<void> requestEmailOtp(String email) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final sessionToken = await _service.requestOtp(phone);
-      state = state.copyWith(isLoading: false, pendingSessionToken: sessionToken);
+      final sessionToken = await _service.requestEmailOtp(email);
+      state = state.copyWith(
+        isLoading: false,
+        pendingSessionToken: sessionToken,
+        pendingEmail: email.trim(),
+      );
     } on AppException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     }
