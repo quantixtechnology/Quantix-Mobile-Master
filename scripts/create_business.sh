@@ -427,6 +427,18 @@ _patch_android_app delivery_app "com.quantix.delivery" "$PKG_DELIVERY" delivery
 _patch_android_app admin_app    "com.quantix.admin"    "$PKG_ADMIN"    admin
 
 # ════════════════════════════════════════════════════════════════════════════
+# STEP 7c — Patch CI workflow: replace FLAVOR=quantix with FLAVOR=<slug>
+# ════════════════════════════════════════════════════════════════════════════
+step "Patching CI workflow FLAVOR → $SLUG..."
+WORKFLOW="$TARGET_DIR/.github/workflows/dart.yml"
+if [[ -f "$WORKFLOW" ]]; then
+  sed -i '' "s|--dart-define=FLAVOR=quantix|--dart-define=FLAVOR=$SLUG|g" "$WORKFLOW"
+  ok "CI workflow  →  FLAVOR=$SLUG (all build steps)"
+else
+  warn "CI workflow not found — skipping FLAVOR patch"
+fi
+
+# ════════════════════════════════════════════════════════════════════════════
 # STEP 8 — Remove stale Android flavor source sets
 # ════════════════════════════════════════════════════════════════════════════
 step "Removing Android flavor source sets..."
