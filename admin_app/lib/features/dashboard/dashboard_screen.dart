@@ -105,6 +105,12 @@ class DashboardScreen extends ConsumerWidget {
                       subtitle: 'Sales and performance',
                       onTap: () => context.go('/analytics'),
                     ),
+                    _QuickAction(
+                      icon: Icons.phone_android_outlined,
+                      title: 'Mobile Provisioning',
+                      subtitle: 'Tenant builds and branding status',
+                      onTap: () => context.go('/mobile'),
+                    ),
                   ],
                 ),
               ),

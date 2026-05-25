@@ -11,6 +11,7 @@ import '../features/customers/customers_screen.dart';
 import '../features/delivery/delivery_screen.dart';
 import '../features/analytics/analytics_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/provisioning/provisioning_screen.dart';
 
 final _routerListenableProvider = Provider<_AuthListenable>((ref) {
   final listenable = _AuthListenable();
@@ -41,6 +42,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/delivery', builder: (_, _) => const DeliveryManagementScreen()),
       GoRoute(path: '/analytics', builder: (_, _) => const AnalyticsScreen()),
       GoRoute(path: '/settings', builder: (_, _) => const AdminSettingsScreen()),
+      GoRoute(path: '/mobile', builder: (_, _) => const ProvisioningScreen()),
     ],
   );
 });
