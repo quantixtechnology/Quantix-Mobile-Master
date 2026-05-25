@@ -2,34 +2,29 @@ name: Quantix Mobile CI
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [main, master, develop]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main, master]
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Static analysis + tests
+  # ─────────────────────────────────────────────────────────────────────────
   analyze:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
@@ -37,21 +32,12 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
-      - name: Install dependencies — shared
-        working-directory: shared
-        run: flutter pub get
-
-      - name: Install dependencies — customer_app
-        working-directory: customer_app
-        run: flutter pub get
-
-      - name: Install dependencies — delivery_app
-        working-directory: delivery_app
-        run: flutter pub get
-
-      - name: Install dependencies — admin_app
-        working-directory: admin_app
-        run: flutter pub get
+      - name: Install dependencies
+        run: |
+          flutter pub get --directory=shared
+          flutter pub get --directory=customer_app
+          flutter pub get --directory=delivery_app
+          flutter pub get --directory=admin_app
 
       - name: Analyze — customer_app
         working-directory: customer_app
@@ -69,25 +55,25 @@ jobs:
         working-directory: customer_app
         run: flutter test || true
 
+  # ─────────────────────────────────────────────────────────────────────────
+  # Customer app builds (APK + AAB)
+  # ─────────────────────────────────────────────────────────────────────────
   build-customer-apk:
     needs: analyze
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
@@ -97,12 +83,37 @@ jobs:
           flutter pub get --directory=shared
           flutter pub get --directory=customer_app
 
+      - name: Write Firebase options
+        working-directory: customer_app/lib
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.CUSTOMER_FIREBASE_OPTIONS }}
+        run: |
+          if [ -n "$FIREBASE_OPTIONS" ]; then
+            echo "$FIREBASE_OPTIONS" > firebase_options.dart
+          fi
+
+      - name: Write keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: customer_app/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+          cat > key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=quantix-release.jks
+          EOF
+
       - name: Build APK
         working-directory: customer_app
         run: flutter build apk --release --dart-define=FLAVOR=quantix
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: quantix-customer-release-apk
           path: customer_app/build/app/outputs/flutter-apk/app-release.apk
@@ -112,20 +123,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
@@ -135,12 +143,163 @@ jobs:
           flutter pub get --directory=shared
           flutter pub get --directory=customer_app
 
+      - name: Write Firebase options
+        working-directory: customer_app/lib
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.CUSTOMER_FIREBASE_OPTIONS }}
+        run: |
+          if [ -n "$FIREBASE_OPTIONS" ]; then
+            echo "$FIREBASE_OPTIONS" > firebase_options.dart
+          fi
+
+      - name: Write keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: customer_app/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+          cat > key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=quantix-release.jks
+          EOF
+
       - name: Build App Bundle
         working-directory: customer_app
         run: flutter build appbundle --release --dart-define=FLAVOR=quantix
 
-      - name: Upload AAB
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: quantix-customer-release-aab
           path: customer_app/build/app/outputs/bundle/release/app-release.aab
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Delivery app build (AAB)
+  # ─────────────────────────────────────────────────────────────────────────
+  build-delivery-aab:
+    needs: analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get --directory=shared
+          flutter pub get --directory=delivery_app
+
+      - name: Write Firebase options
+        working-directory: delivery_app/lib
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.DELIVERY_FIREBASE_OPTIONS }}
+        run: |
+          if [ -n "$FIREBASE_OPTIONS" ]; then
+            echo "$FIREBASE_OPTIONS" > firebase_options.dart
+          fi
+
+      - name: Write keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: delivery_app/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+          cat > key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=quantix-release.jks
+          EOF
+
+      - name: Build App Bundle
+        working-directory: delivery_app
+        run: flutter build appbundle --release --dart-define=FLAVOR=quantix
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quantix-delivery-release-aab
+          path: delivery_app/build/app/outputs/bundle/release/app-release.aab
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Admin app build (AAB)
+  # ─────────────────────────────────────────────────────────────────────────
+  build-admin-aab:
+    needs: analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get --directory=shared
+          flutter pub get --directory=admin_app
+
+      - name: Write Firebase options
+        working-directory: admin_app/lib
+        env:
+          FIREBASE_OPTIONS: ${{ secrets.ADMIN_FIREBASE_OPTIONS }}
+        run: |
+          if [ -n "$FIREBASE_OPTIONS" ]; then
+            echo "$FIREBASE_OPTIONS" > firebase_options.dart
+          fi
+
+      - name: Write keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: admin_app/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+          cat > key.properties <<EOF
+          storePassword=$STORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=quantix-release.jks
+          EOF
+
+      - name: Build App Bundle
+        working-directory: admin_app
+        run: flutter build appbundle --release --dart-define=FLAVOR=quantix
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quantix-admin-release-aab
+          path: admin_app/build/app/outputs/bundle/release/app-release.aab

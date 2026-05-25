@@ -56,10 +56,12 @@ ios/.symlinks/
 .env.*
 *.jks
 *.keystore
+**/key.properties
 
 # Firebase config — add per-flavor, never commit
 **/google-services.json
 **/GoogleService-Info.plist
+**/firebase_options.dart
 
 # VS Code settings (uncomment to exclude)
 #.vscode/

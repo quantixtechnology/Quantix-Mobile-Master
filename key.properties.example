@@ -1,0 +1,12 @@
+# key.properties — NEVER commit the real file (it is in .gitignore)
+# Copy this to key.properties and fill in your values.
+#
+# Generate a keystore:
+#   keytool -genkey -v -keystore quantix-release.jks \
+#           -keyalg RSA -keysize 2048 -validity 10000 \
+#           -alias quantix
+#
+storePassword=CHANGEME
+keyPassword=CHANGEME
+keyAlias=quantix
+storeFile=../quantix-release.jks
