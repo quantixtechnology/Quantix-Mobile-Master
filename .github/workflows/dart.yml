@@ -347,3 +347,56 @@ jobs:
         with:
           name: quantix-admin-release-aab
           path: admin_app/build/app/outputs/bundle/release/app-release.aab
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Notify provision service — runs after all builds regardless of outcome.
+  # Only fires for tenant repos (repo name ends in -Mobile); skips master repo.
+  # ─────────────────────────────────────────────────────────────────────────
+  notify-provision:
+    needs: [build-customer-apk, build-customer-aab, build-delivery-aab, build-admin-aab]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Report build outcome to provision service
+        env:
+          PROVISION_WEBHOOK_URL: ${{ secrets.PROVISION_WEBHOOK_URL }}
+          PROVISION_API_KEY: ${{ secrets.PROVISION_API_KEY }}
+          APK_RESULT: ${{ needs.build-customer-apk.result }}
+          AAB_RESULT: ${{ needs.build-customer-aab.result }}
+          DEL_RESULT: ${{ needs.build-delivery-aab.result }}
+          ADM_RESULT: ${{ needs.build-admin-aab.result }}
+        run: |
+          if [ -z "$PROVISION_WEBHOOK_URL" ]; then
+            echo "PROVISION_WEBHOOK_URL not set — skipping provision notification"
+            exit 0
+          fi
+
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          if [[ "$REPO_NAME" != *-Mobile ]]; then
+            echo "Not a tenant repo (${REPO_NAME}) — skipping provision notification"
+            exit 0
+          fi
+
+          SLUG="${REPO_NAME%-Mobile}"
+          SLUG="${SLUG,,}"
+
+          if [ "$APK_RESULT" = "success" ] && [ "$AAB_RESULT" = "success" ] && \
+             [ "$DEL_RESULT" = "success" ] && [ "$ADM_RESULT" = "success" ]; then
+            STATUS="success"
+          else
+            STATUS="failure"
+          fi
+
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          APK_URL=""
+          AAB_URL=""
+          if [ "$APK_RESULT" = "success" ]; then APK_URL="$RUN_URL"; fi
+          if [ "$AAB_RESULT" = "success" ]; then AAB_URL="$RUN_URL"; fi
+
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Api-Key: $PROVISION_API_KEY" \
+            "${PROVISION_WEBHOOK_URL}/mobile/webhook/ci-artifact" \
+            -d "{\"slug\":\"$SLUG\",\"status\":\"$STATUS\",\"apkUrl\":\"$APK_URL\",\"aabUrl\":\"$AAB_URL\"}")
+          echo "Provision service responded: $HTTP (slug=$SLUG status=$STATUS)"

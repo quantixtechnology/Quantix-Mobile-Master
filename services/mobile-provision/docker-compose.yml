@@ -1,0 +1,29 @@
+services:
+  mobile-provision:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3400:3400"
+    env_file:
+      - .env
+    environment:
+      MASTER_REPO_DIR: /opt/quantix/master
+      TENANTS_DIR: /opt/quantix/tenants
+      STATE_FILE: /opt/quantix/state/provision-state.json
+    volumes:
+      # Mount the checked-out Quantix-Mobile-Master template (read-only)
+      - /opt/quantix/Quantix-Mobile-Master:/opt/quantix/master:ro
+      # Tenant repos are created here (persisted between restarts)
+      - tenants_data:/opt/quantix/tenants
+      # State file that tracks provisioning records
+      - provision_state:/opt/quantix/state
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3400/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tenants_data:
+  provision_state:

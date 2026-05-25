@@ -103,4 +103,31 @@ function forwardToCore(slug, status, apkUrl, aabUrl) {
   });
 }
 
-module.exports = { handleGitHub };
+/**
+ * Handle POST /mobile/webhook/ci-artifact (authenticated with X-Api-Key).
+ * Called by GitHub Actions after each build job to report status and artifact URLs.
+ * Body: { slug, status, apkUrl?, aabUrl? }
+ */
+function handleCiArtifact(req, res) {
+  const { slug, status, apkUrl, aabUrl } = req.body;
+  if (!slug || !status) {
+    return res.status(400).json({ error: 'slug and status are required' });
+  }
+
+  const tenant = store.get(slug);
+  if (!tenant) return res.status(404).json({ error: 'Tenant not found' });
+
+  const patch = {
+    status: status === 'success' ? store.BuildStatus.READY : store.BuildStatus.FAILED,
+  };
+  if (apkUrl) patch.apkUrl = apkUrl;
+  if (aabUrl) patch.aabUrl = aabUrl;
+  if (status !== 'success') patch.error = `CI build ${status}`;
+
+  store.update(slug, patch);
+  console.log(`[webhook] ci-artifact ${slug} → ${patch.status}`);
+  forwardToCore(slug, status, apkUrl, aabUrl);
+  return res.json({ ok: true });
+}
+
+module.exports = { handleGitHub, handleCiArtifact };

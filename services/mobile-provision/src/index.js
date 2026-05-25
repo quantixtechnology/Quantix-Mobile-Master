@@ -69,6 +69,11 @@ app.get('/mobile/tenants/:slug', requireAuth, (req, res) => {
 // ── POST /mobile/webhook/github ───────────────────────────────────────────────
 app.post('/mobile/webhook/github', webhook.handleGitHub);
 
+// ── POST /mobile/webhook/ci-artifact ─────────────────────────────────────────
+// Called by GitHub Actions after each build job to report status + artifact URLs.
+// Authenticated with X-Api-Key (same key as other authenticated endpoints).
+app.post('/mobile/webhook/ci-artifact', requireAuth, webhook.handleCiArtifact);
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`[mobile-provision] Listening on :${PORT}`);
