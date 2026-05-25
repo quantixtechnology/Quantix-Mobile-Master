@@ -1,58 +1,62 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-class AssignedOrder {
-  final String id;
-  final String customerName;
-  final String address;
-  final String status;
-
-  const AssignedOrder({
-    required this.id,
-    required this.customerName,
-    required this.address,
-    required this.status,
-  });
-}
+import 'package:quantix_shared/quantix_shared.dart';
 
 class AssignedOrdersState {
+  final List<OrderModel> orders;
   final bool isLoading;
-  final List<AssignedOrder> orders;
   final String? error;
 
   const AssignedOrdersState({
-    this.isLoading = false,
     this.orders = const [],
+    this.isLoading = false,
     this.error,
   });
 
   AssignedOrdersState copyWith({
+    List<OrderModel>? orders,
     bool? isLoading,
-    List<AssignedOrder>? orders,
     String? error,
+    bool clearError = false,
   }) =>
       AssignedOrdersState(
-        isLoading: isLoading ?? this.isLoading,
         orders: orders ?? this.orders,
-        error: error,
+        isLoading: isLoading ?? this.isLoading,
+        error: clearError ? null : (error ?? this.error),
       );
 }
 
 class AssignedOrdersNotifier extends Notifier<AssignedOrdersState> {
-  @override
-  AssignedOrdersState build() => const AssignedOrdersState();
+  DeliveryRepository get _repo => ref.read(deliveryRepositoryProvider);
 
-  void updateOrderStatus(String orderId, String status) {
-    final updated = state.orders
-        .map((o) => o.id == orderId
-            ? AssignedOrder(
-                id: o.id,
-                customerName: o.customerName,
-                address: o.address,
-                status: status,
-              )
-            : o)
-        .toList();
-    state = state.copyWith(orders: updated);
+  @override
+  AssignedOrdersState build() {
+    _load();
+    return const AssignedOrdersState(isLoading: true);
+  }
+
+  Future<void> _load() async {
+    try {
+      final orders = await _repo.getAssignedOrders();
+      state = state.copyWith(orders: orders, isLoading: false, clearError: true);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> refresh() => _load();
+
+  Future<void> updateStatus(
+    String orderId,
+    String status, {
+    double? lat,
+    double? lng,
+  }) async {
+    try {
+      await _repo.updateStatus(orderId, status, lat: lat, lng: lng);
+      await _load();
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
   }
 }
 
