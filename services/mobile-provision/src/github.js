@@ -101,10 +101,19 @@ async function pushCode(repoDir, cloneUrl) {
  *
  * Skipped when PROVISION_WEBHOOK_URL is empty.
  */
+function _isLocalUrl(url) {
+  return /localhost|127\.0\.0\.1/.test(url);
+}
+
 async function registerWebhook(repoName) {
   const kit = _octokit();
   if (!kit || !WEBHOOK_URL) {
     console.warn('[github] Skipping webhook registration (no token or URL)');
+    return;
+  }
+
+  if (_isLocalUrl(WEBHOOK_URL)) {
+    console.log('[github] Skipping webhook registration (local dev mode)');
     return;
   }
 
