@@ -1,6 +1,14 @@
 class AppConfig {
-  static const String baseUrl = 'https://api.quantix.app/v1';
-  static const String socketUrl = 'https://api.quantix.app';
+  // DEV:  --dart-define=API_BASE_URL=http://10.0.2.2:3000/api/core
+  // PROD: default (https://api.quantixtechnology.in/api/core)
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.quantixtechnology.in/api/core',
+  );
+  static const String socketUrl = String.fromEnvironment(
+    'SOCKET_URL',
+    defaultValue: 'https://api.quantixtechnology.in',
+  );
   static const String appName = 'Quantix';
   static const int connectTimeout = 30000;
   static const int receiveTimeout = 30000;

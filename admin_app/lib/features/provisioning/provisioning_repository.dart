@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'tenant_provision_model.dart';
 
 // Base URL of the mobile-provision service.
-// Override via --dart-define=PROVISION_URL=https://provision.quantix.app
+// Override via --dart-define=PROVISION_URL=https://mobile.quantixtechnology.in
 const String _provisionBaseUrl = String.fromEnvironment(
   'PROVISION_URL',
   defaultValue: 'http://localhost:3400',

@@ -61,9 +61,9 @@ Copy `.env.example` → `.env` and fill in values.
 | `GITHUB_TOKEN` | GitHub Personal Access Token with `repo` + `workflow` scopes. Create at: GitHub → Settings → Developer settings → PAT |
 | `GITHUB_ORG` | GitHub org or user to create tenant repos under, e.g. `quantixtechnology` |
 | `SHARED_REPO_URL` | URL of the shared Dart package submodule, e.g. `https://github.com/quantixtechnology/Quantix-Mobile-Shared.git` |
-| `PROVISION_WEBHOOK_URL` | Public URL of this service (without trailing slash), e.g. `https://provision.quantix.app`. Registered as the webhook receiver on new tenant repos |
+| `PROVISION_WEBHOOK_URL` | Public URL of this service (without trailing slash), e.g. `https://mobile.quantixtechnology.in`. Registered as the webhook receiver on new tenant repos |
 | `GITHUB_WEBHOOK_SECRET` | HMAC secret for verifying GitHub `workflow_run` webhook payloads |
-| `QUANTIX_CORE_URL` | URL of Quantix Core, e.g. `https://core.quantix.app`. Build outcomes are forwarded here |
+| `QUANTIX_CORE_URL` | URL of Quantix Core, e.g. `https://api.quantixtechnology.in`. Build outcomes are forwarded here |
 | `QUANTIX_CORE_WEBHOOK_SECRET` | Must match Core `MOBILE_WEBHOOK_SECRET` |
 
 ---
@@ -99,10 +99,10 @@ Install Nginx and Certbot, then create `/etc/nginx/sites-available/quantix`:
 # Quantix Core (Next.js)
 server {
     listen 443 ssl http2;
-    server_name core.quantix.app;
+    server_name api.quantixtechnology.in;
 
-    ssl_certificate     /etc/letsencrypt/live/core.quantix.app/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/core.quantix.app/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/api.quantixtechnology.in/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.quantixtechnology.in/privkey.pem;
 
     location / {
         proxy_pass         http://127.0.0.1:3000;
@@ -120,10 +120,10 @@ server {
 # Mobile Provision Service
 server {
     listen 443 ssl http2;
-    server_name provision.quantix.app;
+    server_name mobile.quantixtechnology.in;
 
-    ssl_certificate     /etc/letsencrypt/live/provision.quantix.app/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/provision.quantix.app/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/mobile.quantixtechnology.in/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mobile.quantixtechnology.in/privkey.pem;
 
     # Webhook payloads from GitHub Actions can be up to 1 MB
     client_max_body_size 1m;
@@ -141,7 +141,7 @@ server {
 # HTTP → HTTPS redirect
 server {
     listen 80;
-    server_name core.quantix.app provision.quantix.app;
+    server_name api.quantixtechnology.in mobile.quantixtechnology.in;
     return 301 https://$host$request_uri;
 }
 ```
@@ -149,7 +149,7 @@ server {
 ```bash
 # Enable site and obtain certificates
 ln -s /etc/nginx/sites-available/quantix /etc/nginx/sites-enabled/
-certbot --nginx -d core.quantix.app -d provision.quantix.app
+certbot --nginx -d api.quantixtechnology.in -d mobile.quantixtechnology.in
 nginx -t && systemctl reload nginx
 ```
 
@@ -185,7 +185,7 @@ docker compose logs -f mobile-provision
 - [ ] Provision `.env` filled, `GITHUB_TOKEN` has `repo` + `workflow` scopes
 - [ ] `MASTER_REPO_DIR` points to a valid `Quantix-Mobile-Master` checkout
 - [ ] Docker container healthy: `GET /health` → `{"ok":true}`
-- [ ] Nginx TLS certs issued for `core.quantix.app` and `provision.quantix.app`
+- [ ] Nginx TLS certs issued for `api.quantixtechnology.in` and `mobile.quantixtechnology.in`
 - [ ] GitHub Secrets set on the master repo (Firebase, keystore, provision URL + key)
 - [ ] CI run on master repo completes green (all 5 jobs + notify-provision)
 - [ ] Create a test business in Core → confirm repo appears in GitHub org

@@ -1,7 +1,7 @@
 {
   "appName": "Salon App",
   "businessId": "SAL001",
-  "packageName": "com.salon.quantix.app",
+  "packageName": "com.quantixtechnology.salon",
   "businessType": "salon",
   "primaryColor": "#8E24AA",
   "secondaryColor": "#F3E5F5",

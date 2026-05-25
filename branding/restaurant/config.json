@@ -1,7 +1,7 @@
 {
   "appName": "Restaurant App",
   "businessId": "RST001",
-  "packageName": "com.restaurant.quantix.app",
+  "packageName": "com.quantixtechnology.restaurant",
   "businessType": "restaurant",
   "primaryColor": "#E53935",
   "secondaryColor": "#FFF8E1",

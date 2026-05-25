@@ -137,8 +137,8 @@ plugins {
 Create `customer_app/.env` (not committed — add to `.gitignore`):
 
 ```env
-API_BASE_URL=https://api.arbaz.quantix.app/v1
-SOCKET_URL=wss://api.arbaz.quantix.app
+API_BASE_URL=https://api.quantixtechnology.in/v1
+SOCKET_URL=wss://api.quantixtechnology.in
 ```
 
 Read in `shared/lib/config/app_config.dart` via `--dart-define`.

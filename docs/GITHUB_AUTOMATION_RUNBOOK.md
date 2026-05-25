@@ -32,7 +32,7 @@ generated but whose GitHub repo has not been created yet.
 # Replace the empty value with your token:
 GITHUB_TOKEN=<paste-your-token-here>
 GITHUB_ORG=quantixtechnology
-PROVISION_WEBHOOK_URL=https://provision.quantix.app   # public URL for webhook registration
+PROVISION_WEBHOOK_URL=https://mobile.quantixtechnology.in   # public URL for webhook registration
 GITHUB_WEBHOOK_SECRET=dev-webhook-secret-2025          # must match GitHub webhook config
 ```
 
@@ -136,7 +136,7 @@ Before CI can build successfully, add these secrets to the new repo:
 | `KEY_ALIAS` | Keystore key alias |
 | `KEY_PASSWORD` | Key password |
 | `STORE_PASSWORD` | Store password |
-| `PROVISION_WEBHOOK_URL` | `https://provision.quantix.app` |
+| `PROVISION_WEBHOOK_URL` | `https://mobile.quantixtechnology.in` |
 | `PROVISION_API_KEY` | `quantix-dev-key-2025` (matches `API_KEY` in `.env`) |
 
 > Without Firebase / keystore secrets, CI still builds using placeholder stubs

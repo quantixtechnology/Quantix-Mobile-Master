@@ -20,10 +20,9 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> requestEmailOtp(String email) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final sessionToken = await _service.requestEmailOtp(email);
+      await _service.requestEmailOtp(email);
       state = state.copyWith(
         isLoading: false,
-        pendingSessionToken: sessionToken,
         pendingEmail: email.trim(),
       );
     } on AppException catch (e) {
@@ -32,11 +31,11 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> verifyOtp(String code) async {
-    final sessionToken = state.pendingSessionToken;
-    if (sessionToken == null) return;
+    final email = state.pendingEmail;
+    if (email == null) return;
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final user = await _service.verifyOtp(sessionToken, code);
+      final user = await _service.verifyOtp(email, code);
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: true,

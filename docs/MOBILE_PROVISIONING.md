@@ -81,7 +81,7 @@ Trigger provisioning for a new business.
     "primaryColor": "#00B14F",
     "accentColor": "#FF6B00"
   },
-  "logo": "https://cdn.quantix.app/logos/freshmart.png",
+  "logo": "https://cdn.quantixtechnology.in/logos/freshmart.png",
   "businessType": "grocery",
   "packageId": "com.freshmart",
   "features": ["catalog", "cart", "orders", "tracking", "loyalty", "delivery"]

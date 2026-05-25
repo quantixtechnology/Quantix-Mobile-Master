@@ -126,7 +126,7 @@ Also add the signing secrets if not already present:
 | `KEY_ALIAS` | Keystore key alias |
 | `KEY_PASSWORD` | Key password |
 | `STORE_PASSWORD` | Keystore password |
-| `PROVISION_WEBHOOK_URL` | `https://provision.quantix.app` |
+| `PROVISION_WEBHOOK_URL` | `https://mobile.quantixtechnology.in` |
 | `PROVISION_API_KEY` | API key matching `API_KEY` in mobile-provision `.env` |
 
 ---
@@ -149,7 +149,7 @@ In GitHub Actions, check the **Write Firebase options** step — it should print
 Once Firebase is configured for the tenant, update the provision record:
 
 ```bash
-curl -X PATCH https://provision.quantix.app/mobile/tenants/{slug} \
+curl -X PATCH https://mobile.quantixtechnology.in/mobile/tenants/{slug} \
   -H "X-Api-Key: $PROVISION_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"firebaseStatus": "CONFIGURED"}'

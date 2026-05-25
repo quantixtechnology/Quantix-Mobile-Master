@@ -1,6 +1,6 @@
 # API Mapping — Quantix Core ↔ Mobile
 
-Base URL: `https://api.quantix.app/v1`  
+Base URL: `https://api.quantixtechnology.in/api/core`  
 All authenticated requests carry: `Authorization: Bearer <accessToken>` and `X-Business-ID: <businessId>`
 
 ---
@@ -73,7 +73,7 @@ Tenant config is primarily loaded from the bundled `branding/{flavor}/config.jso
   "description": "...",
   "price":       150.00,
   "currency":    "PKR",
-  "image":       "https://cdn.quantix.app/...",
+  "image":       "https://cdn.quantixtechnology.in/...",
   "category":    "cat_abc",
   "inStock":     true,
   "stock":       42
@@ -127,7 +127,7 @@ assigned → picked_up → en_route → delivered
 
 ## Tracking (Customer real-time)
 
-WebSocket: `wss://api.quantix.app`  
+WebSocket: `wss://api.quantixtechnology.in`  
 Auth: `Authorization: Bearer <token>` header on connect
 
 | Event | Direction | Payload | Consumer |

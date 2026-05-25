@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:quantix_shared/quantix_shared.dart';
 import '../auth_provider.dart';
 
-const bool _kDemo = bool.fromEnvironment('USE_DEMO_DATA', defaultValue: false);
-
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -47,27 +45,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (_kDemo)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade100,
-                      border: Border.all(color: Colors.amber.shade700),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.science_outlined, size: 16, color: Colors.amber.shade800),
-                        const SizedBox(width: 6),
-                        Text('DEMO MODE — no backend required',
-                            style: TextStyle(fontSize: 12, color: Colors.amber.shade900,
-                                fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
                 const Spacer(),
                 Text(brand.appName,
                     style: Theme.of(context)
