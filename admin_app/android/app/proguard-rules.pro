@@ -1,6 +1,8 @@
 # Flutter
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
+# Play Core classes are optional (deferred components not used)
+-dontwarn com.google.android.play.core.**
 
 # Firebase
 -keep class com.google.firebase.** { *; }
