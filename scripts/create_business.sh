@@ -224,6 +224,7 @@ rsync -a \
   --exclude='.git/' \
   --exclude='.gitmodules' \
   --exclude='shared/' \
+  --exclude='shared_backup/' \
   --exclude='build/' \
   --exclude='.dart_tool/' \
   --exclude='.idea/' \
