@@ -59,7 +59,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - branding/quantix/
     - branding/arbaz/
-    - branding/freshmart/
     - branding/salon/
     - branding/restaurant/

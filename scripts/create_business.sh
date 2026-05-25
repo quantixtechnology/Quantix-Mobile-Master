@@ -304,8 +304,8 @@ for APP_LABEL in customer_app delivery_app admin_app; do
   echo "$CONFIG_JSON_CONTENT" > "$BRAND_DIR/config.json"
   [[ ! -f "$BRAND_DIR/logo.png"   ]] && echo "$PNG_B64" | base64 -d > "$BRAND_DIR/logo.png"
   [[ ! -f "$BRAND_DIR/splash.png" ]] && echo "$PNG_B64" | base64 -d > "$BRAND_DIR/splash.png"
-  # Remove placeholder brand folder (freshmart)
-  rm -rf "$APP_DIR/branding/freshmart"
+  # Remove Quantix template brand folder (replaced by business brand)
+  rm -rf "$APP_DIR/branding/quantix"
   ok "$APP_LABEL/branding/$SLUG/ written"
 done
 ok "Brand assets ready  (replace logo.png / splash.png with real assets)"
@@ -323,7 +323,7 @@ update_subapp_pubspec() {
   sed -i '' "s|^name:.*|name: $dart_name|"                 "$pubspec"
   sed -i '' "s|^description:.*|description: $description|" "$pubspec"
   # Replace asset path placeholder
-  sed -i '' "s|branding/freshmart/|branding/$SLUG/|g"      "$pubspec"
+  sed -i '' "s|branding/quantix/|branding/$SLUG/|g"        "$pubspec"
   # In static mode, also update the shared dep name
   if [[ -z "$SHARED_REPO_URL" ]]; then
     sed -i '' "s|name: quantix_shared|name: $DART_SHARED|" "$pubspec"

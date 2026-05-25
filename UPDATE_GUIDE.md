@@ -8,8 +8,8 @@ Quantix-Mobile-Shared  ←  standalone git repo (reusable core)
         ├─ git submodule  →  Quantix-Mobile-Master/shared/
         │
         └─ git submodule  →  Arbaz-Mobile/shared/
-                             FreshMart-Mobile/shared/
                              Salon-Mobile/shared/
+                             {Business}-Mobile/shared/
 ```
 
 Business repos are **not forks**. They share one version of the core library

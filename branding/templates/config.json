@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy this file to branding/{slug}/config.json and fill in all fields.",
+  "appName":              "Your Business Name",
+  "businessId":           "BUS001",
+  "packageName":          "com.yourslug.customer",
+  "businessType":         "grocery",
+  "primaryColor":         "#000000",
+  "secondaryColor":       "#FFFFFF",
+  "accentColor":          "#FF6B00",
+  "currency":             "PKR",
+  "supportPhone":         "+00-000-0000000",
+  "mapEnabled":           true,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "cart",
+    "orders",
+    "tracking",
+    "delivery"
+  ]
+}

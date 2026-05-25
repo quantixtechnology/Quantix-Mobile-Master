@@ -36,10 +36,10 @@ android {
             applicationId = "com.arbazfreshmeat.app"
             manifestPlaceholders["appName"] = "Arbaz Fresh Meat"
         }
-        create("freshmart") {
+        create("quantix") {
             dimension = "brand"
-            applicationId = "com.freshmart.app"
-            manifestPlaceholders["appName"] = "Fresh Mart"
+            applicationId = "com.quantix.app"
+            manifestPlaceholders["appName"] = "Quantix"
         }
         create("salon") {
             dimension = "brand"

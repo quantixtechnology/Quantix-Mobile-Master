@@ -1,0 +1,22 @@
+{
+  "appName": "Quantix",
+  "businessId": "QTX001",
+  "packageName": "com.quantix.delivery",
+  "businessType": "generic",
+  "primaryColor": "#0047AB",
+  "secondaryColor": "#FFFFFF",
+  "accentColor": "#FF6B00",
+  "currency": "PKR",
+  "supportPhone": "+92-300-0000000",
+  "mapEnabled": true,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "cart",
+    "orders",
+    "tracking",
+    "loyalty",
+    "delivery",
+    "subscriptions"
+  ]
+}

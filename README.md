@@ -1,108 +1,83 @@
 # Quantix Mobile Master
 
-Single Flutter codebase. Multiple white-label apps.  
-Each business gets its own branded output — distinct app name, icon, colors, and feature set — built from this repository.
+Multi-app white-label Flutter platform. One master repository produces three production apps — Customer storefront, Delivery rider, and Admin dashboard — for any business tenant.
 
 ---
 
-## Project Overview
+## Repository Structure
 
-Quantix Mobile Master is a white-label Flutter app platform for the Quantix commerce ecosystem.  
-One repository produces production-ready apps for any business registered in the `branding/` folder.
-
-| Flavor | Business | Package ID |
-|---|---|---|
-| `arbaz` | Arbaz Fresh Meat | `com.arbazfreshmeat.app` |
-| `freshmart` | Fresh Mart | `com.freshmart.app` |
-| `salon` | Salon App | `com.salon.quantix.app` |
-| `restaurant` | Restaurant App | `com.restaurant.quantix.app` |
+```
+Quantix-Mobile-Master/
+├── customer_app/          Flutter storefront (end customers)
+├── delivery_app/          Flutter rider app (delivery drivers)
+├── admin_app/             Flutter admin dashboard (operations)
+├── shared/                Git submodule → Quantix-Mobile-Shared
+│   └── lib/               Shared Dart package: branding, API, sockets, storage, widgets
+├── scripts/
+│   └── create_business.sh Scaffold a new tenant repo in one command
+├── docs/
+│   └── TENANT_CREATION.md End-to-end tenant onboarding guide
+├── branding/
+│   ├── quantix/           Master template brand (used by this repo's CI)
+│   └── templates/         Documented schema for new tenants
+└── .github/workflows/
+    └── dart.yml           CI: analyze + APK + AAB for customer_app
+```
 
 ---
 
 ## Architecture
 
 ```
-lib/
-├── core/
-│   ├── api/            Dio HTTP client with auth interceptor
-│   ├── branding/       White-label engine (BrandConfig, ThemeFactory, FeatureFlags)
-│   ├── config/         AppConfig (base URL, timeouts)
-│   ├── constants/      App-wide constants
-│   ├── exceptions/     AppException hierarchy
-│   ├── router/         GoRouter with all named routes
-│   ├── sockets/        Socket.IO service (tracking events)
-│   ├── storage/        Flutter Secure Storage wrapper
-│   ├── theme/          AppTheme (static fallback)
-│   └── widgets/        AppScaffold, FeatureGuard
-│
-└── features/
-    ├── auth/           auth_provider + login / otp / register screens
-    ├── cart/           cart_provider + cart screen
-    ├── catalog/        catalog_provider + categories / products / search / detail
-    ├── checkout/       checkout screen
-    ├── home/           dashboard screen
-    ├── maps/           maps screen
-    ├── notifications/  notification_provider + notifications screen
-    ├── orders/         order_provider + history / detail / tracking
-    └── profile/        customer_provider + account / addresses / loyalty / settings
+Quantix-Mobile-Shared  (GitHub: quantixtechnology/Quantix-Mobile-Shared)
+        │  git submodule (pinned commit)
+        ▼
+shared/                ← branding engine, API client, socket service, storage, widgets
+        │  path: ../shared
+        ├── customer_app/  com.{slug}.customer
+        ├── delivery_app/  com.{slug}.delivery
+        └── admin_app/     com.{slug}.admin
 ```
 
-**Stack:**
-
-| Layer | Package |
-|---|---|
-| State | flutter_riverpod 2.6.x |
-| Navigation | go_router 17.x |
-| HTTP | dio 5.x |
-| Models | freezed + json_serializable |
-| Storage | flutter_secure_storage + hive_flutter |
-| Real-time | socket_io_client |
-| Push | firebase_messaging |
-| Maps | google_maps_flutter |
-| Images | cached_network_image |
+Each app reads its brand at runtime from `branding/{flavor}/config.json` via `BrandLoader`. The active flavor is set through `--dart-define=FLAVOR={slug}`.
 
 ---
 
 ## Branding System
 
-Each brand lives in `branding/{flavor}/`:
+Every tenant has a branded folder in each app:
 
 ```
-branding/
-├── arbaz/
-│   ├── config.json   ← app name, colors, features, currency
-│   ├── logo.png      ← AppBar / splash logo  (512×512 recommended)
-│   └── splash.png    ← Launch screen image   (1242×2688 recommended)
-├── freshmart/
-├── salon/
-└── restaurant/
+customer_app/branding/
+├── quantix/          ← master template
+│   ├── config.json
+│   ├── logo.png      (512×512 recommended)
+│   └── splash.png    (1242×2688 recommended)
+└── {slug}/           ← created by create_business.sh
 ```
 
 **config.json schema:**
 
 ```json
 {
-  "appName": "Arbaz Fresh Meat",
-  "businessId": "ARB001",
-  "packageName": "com.arbazfreshmeat.app",
-  "businessType": "meat",
-  "primaryColor": "#1E7A35",
-  "secondaryColor": "#FFFFFF",
-  "accentColor": "#D32F2F",
-  "currency": "INR",
-  "supportPhone": "+91-9876543210",
-  "mapEnabled": true,
-  "notificationsEnabled": true,
-  "features": ["catalog", "cart", "orders", "tracking", "loyalty", "delivery"]
+  "appName":               "Display name shown in the app",
+  "businessId":            "Unique tenant ID (e.g. QTX001)",
+  "packageName":           "com.{slug}.customer",
+  "businessType":          "grocery | meat | salon | restaurant | generic",
+  "primaryColor":          "#RRGGBB",
+  "secondaryColor":        "#RRGGBB",
+  "accentColor":           "#RRGGBB",
+  "currency":              "PKR | INR | USD | ...",
+  "supportPhone":          "+00-000-0000000",
+  "mapEnabled":            true,
+  "notificationsEnabled":  true,
+  "features": ["catalog", "cart", "orders", "tracking", "loyalty", "delivery", "subscriptions"]
 }
 ```
 
-**businessType values:** `meat` · `grocery` · `salon` · `restaurant` · `generic`
+**Available feature flags:** `catalog` · `cart` · `orders` · `tracking` · `maps` · `loyalty` · `appointments` · `subscriptions` · `delivery` · `notifications`
 
-**Feature flags:** `catalog` · `cart` · `orders` · `tracking` · `maps` · `loyalty`  
-· `appointments` · `subscriptions` · `delivery` · `notifications`
-
-Use `FeatureGuard` to auto-hide any widget for brands that do not include a feature:
+Use `FeatureGuard` to conditionally render widgets:
 
 ```dart
 FeatureGuard(
@@ -113,129 +88,118 @@ FeatureGuard(
 
 ---
 
-## Customer Template
+## Shared Package (`shared/`)
 
-The current `lib/` is the **Customer App** template — the storefront that end-customers use.
+The `shared/` directory is a git submodule pointing to [Quantix-Mobile-Shared](https://github.com/quantixtechnology/Quantix-Mobile-Shared.git).
 
-Screens: Login → OTP → Home → Catalog → Product Detail → Cart → Checkout  
-→ Orders → Live Tracking → Profile → Addresses → Notifications
+Key exports:
 
-Key providers:
-
-| Provider | Purpose |
+| Module | Purpose |
 |---|---|
-| `authProvider` | Auth state (isAuthenticated, userId) |
-| `customerProvider` | Customer profile |
-| `catalogProvider` | Categories + products |
-| `cartProvider` | Cart items + totals |
-| `orderProvider` | Order history |
-| `trackingProvider` | Real-time driver location + ETA |
-| `notificationProvider` | Push + in-app notifications |
+| `BrandLoader` | Loads `config.json` at startup |
+| `BrandConfig` | Freezed model — all tenant config fields |
+| `ThemeFactory` | Generates light/dark MaterialTheme from BrandConfig |
+| `FeatureFlags` | Checks which features are enabled for the tenant |
+| `ApiClient` | Dio HTTP client with auth interceptor |
+| `SocketService` | Socket.IO wrapper for real-time events |
+| `AppScaffold` | Branded scaffold widget |
 
-Socket events wired:
-- `delivery:location_updated`
-- `tracking:eta_updated`
-- `order:status_changed`
-- `notification:new`
+To update shared to latest:
 
----
-
-## Delivery Template
-
-> **Status: Planned**
-
-Separate app for delivery riders.
-
-Planned features:
-- Order assignment queue
-- Navigation to pickup / drop-off
-- Status updates (picked up, en-route, delivered)
-- Live location broadcast → `delivery:location_updated`
-- Earnings dashboard
+```bash
+./scripts/update_shared.sh
+```
 
 ---
 
-## Admin Template
-
-> **Status: Planned**
-
-Internal operations dashboard.
-
-Planned features:
-- Order management and dispatch
-- Rider tracking map
-- Inventory / catalog control
-- Customer lookup
-- Promotion and banner management
-- Analytics
-
----
-
-## Build Steps
+## Build
 
 ### Prerequisites
 
 ```bash
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+git clone --recurse-submodules https://github.com/quantixtechnology/Quantix-Mobile-Master.git
+cd Quantix-Mobile-Master
+flutter pub get --directory=shared
+flutter pub get --directory=customer_app
+flutter pub get --directory=delivery_app
+flutter pub get --directory=admin_app
 ```
 
-### Run a specific brand (development)
+### Development
 
 ```bash
-flutter run --flavor arbaz      --dart-define=FLAVOR=arbaz
-flutter run --flavor freshmart  --dart-define=FLAVOR=freshmart
-flutter run --flavor salon      --dart-define=FLAVOR=salon
-flutter run --flavor restaurant --dart-define=FLAVOR=restaurant
+cd customer_app && flutter run --dart-define=FLAVOR=quantix
+cd delivery_app && flutter run --dart-define=FLAVOR=quantix
+cd admin_app    && flutter run --dart-define=FLAVOR=quantix
 ```
 
 ### Release APK
 
 ```bash
-flutter build apk --flavor arbaz      --dart-define=FLAVOR=arbaz      --release
-flutter build apk --flavor freshmart  --dart-define=FLAVOR=freshmart  --release
-flutter build apk --flavor salon      --dart-define=FLAVOR=salon      --release
-flutter build apk --flavor restaurant --dart-define=FLAVOR=restaurant --release
+cd customer_app && flutter build apk --release --dart-define=FLAVOR=quantix
+cd delivery_app && flutter build apk --release --dart-define=FLAVOR=quantix
+cd admin_app    && flutter build apk --release --dart-define=FLAVOR=quantix
 ```
-
-### Play Store App Bundle
-
-```bash
-flutter build appbundle --flavor arbaz      --dart-define=FLAVOR=arbaz      --release
-flutter build appbundle --flavor freshmart  --dart-define=FLAVOR=freshmart  --release
-flutter build appbundle --flavor salon      --dart-define=FLAVOR=salon      --release
-flutter build appbundle --flavor restaurant --dart-define=FLAVOR=restaurant --release
-```
-
-### Add a new brand
-
-1. Create `branding/{slug}/config.json` and fill in all required fields.
-2. Add `logo.png` and `splash.png` to the same folder.
-3. Add a `productFlavor` block in `android/app/build.gradle.kts`.
-4. Create `android/app/src/{slug}/AndroidManifest.xml`.
-5. Add `- branding/{slug}/` to the `assets` list in `pubspec.yaml`.
-6. Run `flutter pub get`.
 
 ### Analyze
 
 ```bash
-flutter analyze   # must return: No issues found!
+cd customer_app && flutter analyze --no-pub   # must return: No issues found!
+cd delivery_app && flutter analyze --no-pub
+cd admin_app    && flutter analyze --no-pub
 ```
 
 ---
 
-## Firebase Setup (per brand)
+## Creating a New Tenant
 
-1. Create a Firebase project for the brand.
-2. Register the Android app with the flavor `applicationId`.
-3. Download `google-services.json` → place at `android/app/src/{flavor}/google-services.json`.
-4. Uncomment `Firebase.initializeApp()` in `lib/main.dart`.
+```bash
+./scripts/create_business.sh arbaz \
+  --app-name "Arbaz Fresh Meat" \
+  --package-base com.arbazfreshmeat \
+  --shared-repo https://github.com/quantixtechnology/Quantix-Mobile-Shared.git \
+  --type meat \
+  --primary-color "#1E7A35" \
+  --currency INR \
+  --yes
+```
+
+See [docs/TENANT_CREATION.md](docs/TENANT_CREATION.md) for the full onboarding guide.
+
+---
+
+## CI / CD
+
+GitHub Actions runs on every push to `main`:
+
+| Job | Description |
+|---|---|
+| `analyze` | `flutter pub get` + `flutter analyze` for all three apps |
+| `build-customer-apk` | Release APK — `customer_app` |
+| `build-customer-aab` | Release AAB — `customer_app` |
+
+Artifacts are uploaded and downloadable from each workflow run.
+
+---
+
+## Firebase (per tenant)
+
+1. Create a Firebase project for the tenant.
+2. Register the Android app with the tenant `applicationId` (`com.{slug}.customer`).
+3. Download `google-services.json` → place at `customer_app/android/app/google-services.json`.
+4. Uncomment `Firebase.initializeApp()` in `customer_app/lib/main.dart`.
 
 > `google-services.json` and `GoogleService-Info.plist` are listed in `.gitignore`. Never commit them.
 
 ---
 
-## Backend
+## Stack
 
-OpenAPI contract: `openapi/customer-v1.yaml`  
-Base URL: configured in `lib/core/config/app_config.dart`.
+| Layer | Package | Version |
+|---|---|---|
+| State | flutter_riverpod | 2.6.x |
+| Navigation | go_router | 17.x |
+| HTTP | dio | 5.x |
+| Models | freezed + json_serializable | 2.x |
+| Storage | flutter_secure_storage + hive_flutter | — |
+| Real-time | socket_io_client | 2.x |
