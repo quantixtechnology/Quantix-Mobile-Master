@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quantix_shared/quantix_shared.dart';
 
@@ -8,6 +9,22 @@ class AuthNotifier extends Notifier<AuthState> {
   AuthService get _service => ref.read(authServiceProvider);
 
   Future<void> restoreSession() async {
+    if (kDebugMode) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      state = state.copyWith(
+        isRestoring: false,
+        isAuthenticated: true,
+        user: const UserModel(
+          id: 'CUS-BUS-202605-0001-TEST001',
+          name: 'Mukhtar Test User',
+          phone: '9999999999',
+          email: 'mukhtarkhan143@gmail.com',
+          role: UserRole.customer,
+          businessId: 'BUS-202605-0001',
+        ),
+      );
+      return;
+    }
     state = state.copyWith(isRestoring: true);
     final user = await _service.restoreSession();
     state = state.copyWith(
