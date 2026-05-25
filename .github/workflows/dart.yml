@@ -109,7 +109,6 @@ jobs:
           fi
 
       - name: Write keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         working-directory: customer_app/android
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -117,13 +116,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
-          cat > key.properties <<EOF
-          storePassword=$STORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=quantix-release.jks
-          EOF
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+            printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=quantix-release.jks\n' \
+              "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > key.properties
+          fi
 
       - name: Build APK
         working-directory: customer_app
@@ -169,7 +166,6 @@ jobs:
           fi
 
       - name: Write keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         working-directory: customer_app/android
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -177,13 +173,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
-          cat > key.properties <<EOF
-          storePassword=$STORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=quantix-release.jks
-          EOF
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+            printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=quantix-release.jks\n' \
+              "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > key.properties
+          fi
 
       - name: Build App Bundle
         working-directory: customer_app
@@ -232,7 +226,6 @@ jobs:
           fi
 
       - name: Write keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         working-directory: delivery_app/android
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -240,13 +233,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
-          cat > key.properties <<EOF
-          storePassword=$STORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=quantix-release.jks
-          EOF
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+            printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=quantix-release.jks\n' \
+              "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > key.properties
+          fi
 
       - name: Build App Bundle
         working-directory: delivery_app
@@ -295,7 +286,6 @@ jobs:
           fi
 
       - name: Write keystore
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         working-directory: admin_app/android
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -303,13 +293,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
-          cat > key.properties <<EOF
-          storePassword=$STORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=quantix-release.jks
-          EOF
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > quantix-release.jks
+            printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=quantix-release.jks\n' \
+              "$STORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > key.properties
+          fi
 
       - name: Build App Bundle
         working-directory: admin_app
