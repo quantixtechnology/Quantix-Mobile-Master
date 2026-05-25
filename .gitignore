@@ -58,10 +58,10 @@ ios/.symlinks/
 *.keystore
 **/key.properties
 
-# Firebase config — add per-flavor, never commit
+# Firebase config — google-services.json and plist contain secrets, never commit
+# firebase_options.dart is safe to commit (placeholder values; CI overwrites with real ones)
 **/google-services.json
 **/GoogleService-Info.plist
-**/firebase_options.dart
 
 # VS Code settings (uncomment to exclude)
 #.vscode/

@@ -39,6 +39,22 @@ jobs:
           flutter pub get --directory=delivery_app
           flutter pub get --directory=admin_app
 
+      - name: Write Firebase options (secrets override placeholder stubs)
+        run: |
+          if [ -n "$CUSTOMER_FIREBASE_OPTIONS" ]; then
+            echo "$CUSTOMER_FIREBASE_OPTIONS" > customer_app/lib/firebase_options.dart
+          fi
+          if [ -n "$DELIVERY_FIREBASE_OPTIONS" ]; then
+            echo "$DELIVERY_FIREBASE_OPTIONS" > delivery_app/lib/firebase_options.dart
+          fi
+          if [ -n "$ADMIN_FIREBASE_OPTIONS" ]; then
+            echo "$ADMIN_FIREBASE_OPTIONS" > admin_app/lib/firebase_options.dart
+          fi
+        env:
+          CUSTOMER_FIREBASE_OPTIONS: ${{ secrets.CUSTOMER_FIREBASE_OPTIONS }}
+          DELIVERY_FIREBASE_OPTIONS: ${{ secrets.DELIVERY_FIREBASE_OPTIONS }}
+          ADMIN_FIREBASE_OPTIONS: ${{ secrets.ADMIN_FIREBASE_OPTIONS }}
+
       - name: Analyze — customer_app
         working-directory: customer_app
         run: flutter analyze --no-pub
