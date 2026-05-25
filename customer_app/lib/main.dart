@@ -7,6 +7,7 @@ import 'router/app_router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  await openCartBox();
   // Firebase.initializeApp() — add google-services.json before enabling
 
   final brandConfig = await BrandLoader.load(appFlavor);

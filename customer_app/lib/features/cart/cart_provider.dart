@@ -34,25 +34,25 @@ class CartNotifier extends Notifier<CartState> {
   CartRepository get _repo => ref.read(cartRepositoryProvider);
 
   @override
-  CartState build() => const CartState();
+  CartState build() => CartState(items: _repo.items);
 
-  void addProduct(ProductModel product) {
-    _repo.addItem(product);
-    state = state.copyWith(items: List.of(_repo.items));
+  Future<void> addProduct(ProductModel product) async {
+    await _repo.addItem(product);
+    state = state.copyWith(items: _repo.items);
   }
 
-  void removeProduct(String productId) {
-    _repo.removeItem(productId);
-    state = state.copyWith(items: List.of(_repo.items));
+  Future<void> removeProduct(String productId) async {
+    await _repo.removeItem(productId);
+    state = state.copyWith(items: _repo.items);
   }
 
-  void decrement(String productId) {
-    _repo.decrementItem(productId);
-    state = state.copyWith(items: List.of(_repo.items));
+  Future<void> decrement(String productId) async {
+    await _repo.decrementItem(productId);
+    state = state.copyWith(items: _repo.items);
   }
 
-  void clear() {
-    _repo.clear();
+  Future<void> clear() async {
+    await _repo.clear();
     state = state.copyWith(items: const []);
   }
 }

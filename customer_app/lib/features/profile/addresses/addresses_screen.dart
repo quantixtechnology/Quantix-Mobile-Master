@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quantix_shared/quantix_shared.dart';
 
-final _addressesProvider = FutureProvider<List<AddressModel>>((ref) async {
-  final res = await ref.read(apiClientProvider).dio.get('/addresses');
-  final list = res.data as List<dynamic>;
-  return list.map((e) => AddressModel.fromJson(e as Map<String, dynamic>)).toList();
+final _addressesProvider = FutureProvider<List<AddressModel>>((ref) {
+  return ref.read(profileRepositoryProvider).getAddresses();
 });
 
 class AddressesScreen extends ConsumerWidget {

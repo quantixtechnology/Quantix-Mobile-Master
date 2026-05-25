@@ -7,6 +7,7 @@ import 'router/app_router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  await openCartBox();
 
   final brandConfig = await BrandLoader.load(appFlavor);
 
