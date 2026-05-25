@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const store = require('./store');
 
 const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || '';
+const CORE_URL = process.env.QUANTIX_CORE_URL || '';
+const CORE_SECRET = process.env.QUANTIX_CORE_WEBHOOK_SECRET || '';
 
 /**
  * Verify the GitHub HMAC-SHA256 webhook signature.
@@ -48,6 +50,7 @@ function handleGitHub(req, res) {
 
     store.update(body.slug, patch);
     console.log(`[webhook] ${body.slug} → ${patch.status}`);
+    forwardToCore(body.slug, body.status, body.apkUrl, body.aabUrl);
     return res.json({ ok: true });
   }
 
@@ -72,11 +75,32 @@ function handleGitHub(req, res) {
 
     store.update(slug, patch);
     console.log(`[webhook] workflow_run ${slug} → ${patch.status} (${conclusion})`);
+    forwardToCore(slug, conclusion);
     return res.json({ ok: true });
   }
 
   // Unknown event — acknowledge without processing
   res.json({ ok: true, note: 'unhandled event' });
+}
+
+/**
+ * Forward a build outcome to Quantix Core so the admin dashboard stays in sync.
+ * Fire-and-forget — errors are logged but never thrown.
+ */
+function forwardToCore(slug, status, apkUrl, aabUrl) {
+  if (!CORE_URL) return;
+  const body = JSON.stringify({ slug, status, apkUrl, aabUrl });
+  fetch(`${CORE_URL}/api/core/mobile/webhook`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-webhook-secret': CORE_SECRET,
+    },
+    body,
+    signal: AbortSignal.timeout(8000),
+  }).catch((err) => {
+    console.warn(`[webhook] Core forward failed for ${slug}:`, err.message);
+  });
 }
 
 module.exports = { handleGitHub };
