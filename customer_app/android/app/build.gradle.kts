@@ -4,8 +4,6 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
 }
 
 // Load signing credentials from key.properties (never committed to git)
@@ -55,7 +53,6 @@ android {
             signingConfig = if (keyPropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
-                // CI injects signing via environment — fall back to debug locally
                 signingConfigs.getByName("debug")
             }
             isMinifyEnabled = true
