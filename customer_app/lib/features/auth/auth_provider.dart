@@ -20,7 +20,7 @@ class AuthNotifier extends Notifier<AuthState> {
           phone: '9999999999',
           email: 'mukhtarkhan143@gmail.com',
           role: UserRole.customer,
-          businessId: 'BUS-202605-0001',
+          businessId: 'cmpgku3um004rkyxmuvk8k5a1',
         ),
       );
       return;

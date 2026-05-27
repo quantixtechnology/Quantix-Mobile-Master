@@ -1,0 +1,21 @@
+{
+  "appName": "Arbaz Fresh Meat",
+  "businessId": "cmpgku3um004rkyxmuvk8k5a1",
+  "packageName": "com.arbazfreshmeat.customer",
+  "businessType": "meat",
+  "primaryColor": "#E53935",
+  "secondaryColor": "#FFFFFF",
+  "accentColor": "#FF7043",
+  "currency": "PKR",
+  "supportPhone": "+91-9876543210",
+  "mapEnabled": false,
+  "notificationsEnabled": true,
+  "features": [
+    "catalog",
+    "cart",
+    "orders",
+    "tracking",
+    "loyalty",
+    "delivery"
+  ]
+}
